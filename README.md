@@ -1,13 +1,28 @@
-## DevOps_Challenge
-Desafio de criação de uma IaC (Infrastructure as Code) no Azure com Terraform.
+# DevOps_Challenge 💻
+O objetivo deste desafio é provisionar uma infraestrutura usando Infra-as-Code (IaC) Terraform que deve contém:
 
-# Provisionamento 💻
+- Um cluster Kubernetes (AKS) na nuvem. 
+- Configuração de rede e suas subnets.
+- Configuração de segurança usando o princípio de privilégio mínimo.
+- Uso de uma IAM role para permissões no cluster.
+Aplicação das melhores práticas para provisionamento de recursos na nuvem.
+- Localização do AKS em `central-us` com VMs do tamanho `Standard_DS2_v2`
 
- Você precisa nos mostrar uma infraestrutura provisionada usando Infra-ascode (terraform, pulumi, ansible, etc), que deve conter:
-- Configure um cluster k8s em núvem (EKS, AKS ou GKE)
-- Configure a rede e suas subnets.
-- Configure a segurança usando o princípio de privilégio mínimo.
-- Use uma IAM role para dar as permissões no cluster.
-- Use sempre as melhores práticas para provisionar os recursos da núvem que escolher.
-- Pra criar AKS, usar location central-us
-- VM de tamanho `Standard_DS2_v2`
+## Estrutura do Projeto 🏗️
+
+### Diretório `backend-terraform`
+Contém a configuração para provisionar os recursos **fixos** necessários para armazenar o estado do Terraform. Isso inclui a criação de um resource group, uma storage account e um container de armazenamento no Azure.
+
+### Diretório `terraform`
+Contém a configuração para provisionar o cluster AKS, a rede virtual e suas subnets. Este diretório utiliza o backend configurado para armazenar o estado (no arquivo .tfstate) do Terraform remotamente.
+
+## Workflow de Pipeline CI/CD 📥
+Uma pipeline yaml foi configurada usando GitHub Actions para **automatizar** o processo de provisionamento e gerenciamento da infraestrutura. 
+
+A pipeline realiza as seguintes etapas: 
+
+1. Verifica a existência do resource group e, se existente, o destrói para evitar conflitos.
+2. Inicializa o Terraform.
+3. Valida a configuração do Terraform.
+4. Gera e aplica o plano de execução do Terraform.
+
