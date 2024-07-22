@@ -16,7 +16,7 @@ provider "azurerm" { # depois tirar essas credenciais passando pra secret do gh
 
 resource "azurerm_resource_group" "rg_DesafioDevOps_backend" {
 	location = var.resource_location
-  name     = "rg_DesafioDevOps_backend"
+  name = "rg_DesafioDevOps_backend"
 }
 
 resource "azurerm_storage_account" "res-8" {
