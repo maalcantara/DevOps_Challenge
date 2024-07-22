@@ -36,6 +36,26 @@ jobs:
       working-directory: ./terraform
       run: terraform init
 
+    # verificar se o resource group já existe
+    - name: Check if Resource Group exists
+      id: rg_exists
+      continue-on-error: true
+      run: |
+        az group show --name rg_DesafioDevOps --output json > rg.json
+        if [ -s rg.json ]; then
+          echo "exists=true" >> $GITHUB_ENV
+        else 
+          echo "exists=false" >> $GITHUB_ENV
+        fi
+
+    # se o resource group existir, deletá-lo
+    - name: Destroy existing Resource Group if it exists
+      if: env.exists == 'true'
+      continue-on-error: true
+      working-directory: ./terraform
+      run: |
+        terraform destroy -target=azurerm_resource_group.rg_DesafioDevOps -auto-approve
+
     - name: Terraform Validate
       working-directory: ./terraform
       run: terraform validate
