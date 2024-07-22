@@ -1,0 +1,55 @@
+name: Terraform Plan and Apply for Azure
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.2.0
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+
+    - name: Terraform Validate
+      working-directory: ./terraform
+      run: terraform validate
+
+    - name: Terraform Plan for Azure
+      working-directory: ./terraform
+      run: terraform plan -out=deploy_plan.tfplan
+
+    - name: Upload Terraform Plan
+      uses: actions/upload-artifact@v2
+      with:
+        name: deploy_plan
+        path: ./terraform/deploy_plan.tfplan
+
+    - name: Terraform Apply for Azure
+      working-directory: ./terraform
+      run: terraform apply -auto-approve ./deploy_plan.tfplan
