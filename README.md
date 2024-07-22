@@ -26,3 +26,9 @@ A pipeline realiza as seguintes etapas:
 3. Valida a configuração do Terraform.
 4. Gera e aplica o plano de execução do Terraform.
 
+## Próximos passos: ➡️
+- pipeline de build .NET
+- validar código .net com Lint (regras)
+- step de validação do lint antes do build
+- salvar imagem docker no artifact e ACR
+- próximo job: deploy no cluster AKS
