@@ -35,3 +35,5 @@ A pipeline realiza as seguintes etapas:
 - step de validação do lint antes do build
 - salvar imagem docker no artifact e ACR
 - próximo job: deploy no cluster AKS
+
+serasi agora vai a pipeline do terraform??
