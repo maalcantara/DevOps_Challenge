@@ -16,6 +16,9 @@ Contém a configuração para provisionar os recursos **fixos** necessários par
 ### Diretório `terraform`
 Contém a configuração para provisionar o cluster AKS, a rede virtual e suas subnets. Este diretório utiliza o backend configurado para armazenar o estado (no arquivo .tfstate) do Terraform remotamente.
 
+### Diretório `dotnet-app`
+Aplicativo web .NET básico ...
+
 ## Workflow de Pipeline CI/CD 📥
 Uma pipeline yaml foi configurada usando GitHub Actions para **automatizar** o processo de provisionamento e gerenciamento da infraestrutura. 
 
