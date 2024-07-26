@@ -1,0 +1,59 @@
+name: .NET build and Docker Image CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+
+jobs:
+  build-dotnet:
+    runs-on: ubuntu-latest
+
+    env:
+      DOTNET_VERSION: '8.0.x'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    # Lint for C# -> dotnet format
+    - name: Install dotnet-format tool
+      working-directory: ./dotnet-app
+      run: dotnet tool install -g dotnet-format
+
+    - name: Run dotnet format
+      working-directory: ./dotnet-app
+      run: dotnet format
+
+    # SonarLint Analysis
+    - name: Analyze with SonarCloud
+      uses: SonarSource/sonarcloud-github-action@v2.2.0
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=maalcantara_DevOps_Challenge
+          -Dsonar.organization=maalcantara
+          -X
+        projectBaseDir: .
+
+    - name: Build the project
+      working-directory: ./dotnet-app
+      run: dotnet publish --configurations Release --output ./publish
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: dotnet-app
+        path: ./publish
