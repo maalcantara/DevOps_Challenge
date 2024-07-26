@@ -50,10 +50,14 @@ jobs:
 
     - name: Build the project
       working-directory: ./dotnet-app
-      run: dotnet publish --configurations Release --output ./publish
+      run: dotnet build --configuration Release
+
+    - name: Publish the project
+      working-directory: ./dotnet-app
+      run: dotnet publish --configuration Release --output ./publish
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: dotnet-app
-        path: ./publish
+        path: ./dotnet-app/publish
