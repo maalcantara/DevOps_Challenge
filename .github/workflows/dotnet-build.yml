@@ -1,12 +1,10 @@
 name: .NET build and Docker Image CI
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Terraform Plan and Apply for Azure"]
+    types:
+      - completed
 
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
@@ -77,16 +75,19 @@ jobs:
         password: ${{ secrets.ACR_PASSWORD }}
 
     - name: Build the Docker image
+      working-directory: ./dotnet-app
       run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest .
 
     - name: Save Docker image to a tar file
+      working-directory: ./dotnet-app
       run: docker save ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest -o dotnetapp.tar
 
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v2
       with:
         name: dotnetapp-image
-        path: dotnetapp.tar
+        path: ./dotnet-app/dotnetapp.tar
 
     - name: Push Docker image to ACR
+      working-directory: ./dotnet-app
       run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest
