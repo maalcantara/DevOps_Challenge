@@ -1,4 +1,4 @@
-# DevOps_Challenge 💻
+# DevOps_Challenge 💻 ♾️
 O objetivo deste desafio é provisionar uma infraestrutura usando Infra-as-Code (IaC) Terraform que deve conter:
 
 - Um cluster Kubernetes (AKS) na nuvem. 
@@ -13,11 +13,17 @@ Aplicação das melhores práticas para provisionamento de recursos na nuvem.
 ### Diretório `backend-terraform`
 Contém a configuração para provisionar os recursos **fixos** necessários para armazenar o estado do Terraform. Isso inclui a criação de um resource group, uma storage account, um container de armazenamento no Azure, e o recurso ACR (Azure Container Registry), que posteriormente irá armazenar a imagem docker gerada a partir da execução da aplicação.
 
-### Diretório `terraform`
+### Diretório `terraform` 🌱
 Contém a configuração para provisionar o cluster AKS, a rede virtual e suas subnets. Este diretório utiliza o backend configurado para armazenar o estado (no arquivo .tfstate) do Terraform remotamente.
 
 ### Diretório `dotnet-app`
 Aplicativo web .NET básico de 'Hello World' que posteriormente será realizado o deploy desta aplicação no cluster AKS criado.
+
+### Diretório `k8s` 🧭
+Contém os arquivos de configuração necessários para o deploy da aplicação no cluster AKS. Esses arquivos incluem:
+- `deployment.yml`: Define como a aplicação será implantada no cluster. Especifica detalhes como o número de réplicas, a imagem Docker a ser usada e outros parâmetros importantes para o deployment.
+
+- `service.yml`: Define como a aplicação será exposta para o mundo exterior. Especifica o tipo de serviço (por exemplo, `LoadBalancer`), as portas a serem expostas e outras configurações necessárias para garantir que a aplicação seja acessível externamente.
 
 ## Workflow de Pipeline CI/CD 📥
 Este repositório possui duas pipelines yaml configuradas utilizando GitHub Actions para **automatizar** o processo de provisionamento, gerenciamento da infraestrutura, build da aplicação e criação de uma imagem docker a partir deste build.
@@ -46,6 +52,11 @@ Com a adição do evento `workflow_run`, essa pipeline é executada após o êxi
 8. Salva a imagem Docker em um arquivo tar.
 9. Realiza o upload do artefato da imagem Docker no actions.
 10. Faz o envio (push) da imagem Docker para o ACR.
+
+#### 3° Job: deploy-aks
+11. Obtém as credenciais para acessar o cluster AKS que foi criado.
+12. Faz o deploy da aplicação (contida na imagem Docker) no cluster AKS.
+13. Expõe a aplicação para ser acessada externamente - atráves de um IP público.
 
 ## Próximos passos: ➡️
 - pipeline de build .NET
