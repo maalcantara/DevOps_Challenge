@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: dotnetapp
-        image: ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest
+        image: acrdesafiodevops.azurecr.io/dotnetapp:latest
         ports:
         - containerPort: 80
