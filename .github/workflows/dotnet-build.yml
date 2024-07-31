@@ -106,7 +106,7 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Set up Kebernetes tools
+    - name: Set up Kubernetes tools
       run: |
         az aks get-credentials --resource-group rg_DesafioDevOps --name cluster_DesafioDevOps
         curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
