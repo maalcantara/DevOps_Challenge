@@ -16,6 +16,9 @@ Contém a configuração para provisionar os recursos **fixos** necessários par
 ### Diretório `terraform` 🌱
 Contém a configuração para provisionar o cluster AKS, a rede virtual e suas subnets. Este diretório utiliza o backend configurado para armazenar o estado (no arquivo .tfstate) do Terraform remotamente.
 
+**🔵 Atualização (01/08/24):** adição do resource `container_registry`, que cria um Azure Container Registry (ACR), utilizado para armazenar as imagens Docker geradas a partir do build da aplicação.
+- Além disso, foi configurado um `role_assignment` para garantir que o AKS tenha permissão para puxar imagens diretamente do ACR → facilitando o processo de deploy no cluster.
+
 ### Diretório `dotnet-app`
 Aplicativo web .NET básico de 'Hello World' que posteriormente será realizado o deploy desta aplicação no cluster AKS criado.
 
