@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: dotnetapp
-        image: acrdesafiodevops.azurecr.io/dotnetapp:latest
+        image: acrdesafiodevops1.azurecr.io/dotnetapp:latest
         ports:
         - containerPort: 80
