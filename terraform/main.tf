@@ -69,3 +69,16 @@ resource "azurerm_kubernetes_cluster" "res-1" {
     Environment = "Development"
   }
 }
+
+# ACR e seu Role Assignment
+resource "azurerm_container_registry" "acrdesafiodevops1" {
+  name                = "acrdesafiodevops1"
+  location            = azurerm_resource_group.rg_DesafioDevOps.location
+  resource_group_name = azurerm_resource_group.rg_DesafioDevOps.name
+  sku                 = "Standard"
+}
+resource "azurerm_role_assignment" "acr_pull" {
+  scope                = azurerm_container_registry.acrdesafiodevops1.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_kubernetes_cluster.res-1.identity[0].principal_id
+}
