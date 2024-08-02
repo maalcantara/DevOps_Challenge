@@ -70,4 +70,5 @@ Com a adição do evento `workflow_run`, essa pipeline é executada após o êxi
 
 **Parei aqui:** a pipeline de deploy funciona, ao verificar 'Workloads' do cluster AKS, o 'Ready' aparece 0/1 - descobrir por quê e como resolver.
 
-→ Atualizar o path do acr em k8s/deployment.yml e o secret do actions.
+→ Atualizar o path do acr em k8s/deployment.yml e o secret do actions. Tive que fazer isso porque adicionei o resource Container Registry (ACR) no main.tf do diretório principal.
+→ Atualizar a role assignment do Terraform para Owner, garantindo que ele tenha as permissões necessárias para atribuir o papel AcrPull ao AKS, permitindo que o cluster acesse o Azure Container Registry (ACR) durante a execução do código.
