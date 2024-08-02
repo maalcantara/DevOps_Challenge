@@ -69,3 +69,5 @@ Com a adição do evento `workflow_run`, essa pipeline é executada após o êxi
 - próximo job: deploy no cluster AKS
 
 **Parei aqui:** a pipeline de deploy funciona, ao verificar 'Workloads' do cluster AKS, o 'Ready' aparece 0/1 - descobrir por quê e como resolver.
+
+→ Atualizar o path do acr em k8s/deployment.yml e o secret do actions.
