@@ -18,6 +18,12 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
 
+    outputs:
+      container_registry_login_server: ${{ steps.reg_var.outputs.container_registry_login_server }}
+      container_registry_admin_username: ${{ steps.reg_var.outputs.container_registry_admin_username }}
+      container_registry_admin_password: ${{ steps.reg_var.outputs.container_registry_admin_password }}
+      kube_config: ${{ steps.reg_var.outputs.kube_config }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -73,3 +79,18 @@ jobs:
     - name: Terraform Apply for Azure
       working-directory: ./terraform
       run: terraform apply -auto-approve ./deploy_plan.tfplan
+
+    # Capturando os Outputs do Terraform e definindo variáveis de saída para a próxima pipeline
+    - name: Set Output Variables
+      id: reg_var
+      working-directory: ./terraform
+      run: |
+        container_registry_login_server=$(terraform output -raw container_registry_login_server)
+        container_registry_admin_username=$(terraform output -raw container_registry_admin_username)
+        container_registry_admin_password=$(terraform output -raw container_registry_admin_password | base64)
+        kube_config=$(terraform output -raw kube_config | base64)
+
+        echo "container_registry_login_server=${container_registry_login_server}" >> $GITHUB_OUTPUT
+        echo "container_registry_admin_username=${container_registry_admin_username}" >> $GITHUB_OUTPUT
+        echo "container_registry_admin_password=${container_registry_admin_password}" >> $GITHUB_OUTPUT
+        echo "kube_config=${kube_config}" >> $GITHUB_OUTPUT
