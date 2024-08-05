@@ -23,7 +23,7 @@ resource "azurerm_resource_group" "rg_DesafioDevOps" {
   location = var.resource_location
 }
 
-# virtual network
+# Virtual Network
 resource "azurerm_virtual_network" "res-5" {
   address_space       = ["10.0.0.0/16"]
   name                = "vNET_DesafioDevOps"
@@ -31,7 +31,7 @@ resource "azurerm_virtual_network" "res-5" {
   resource_group_name = azurerm_resource_group.rg_DesafioDevOps.name
 }
 
-# subnet 1
+# Subnet 1
 resource "azurerm_subnet" "res-6" {
   address_prefixes    = ["10.0.1.0/26"]
   name                = "subnet1_DesafioDevOps"
@@ -39,7 +39,7 @@ resource "azurerm_subnet" "res-6" {
   virtual_network_name = azurerm_virtual_network.res-5.name
 }
 
-# subnet 2
+# Subnet 2
 resource "azurerm_subnet" "res-7" {
   address_prefixes    = ["10.0.2.0/24"]
   name                = "subNET_DesafioDevOps"
@@ -47,7 +47,7 @@ resource "azurerm_subnet" "res-7" {
   virtual_network_name = azurerm_virtual_network.res-5.name
 }
 
-# cluster k8s
+# Cluster AKS
 resource "azurerm_kubernetes_cluster" "res-1" {
   name                      = "cluster_DesafioDevOps"
   automatic_channel_upgrade = "patch"
@@ -76,5 +76,33 @@ resource "azurerm_container_registry" "acrdesafiodevops1" {
   location            = azurerm_resource_group.rg_DesafioDevOps.location
   resource_group_name = azurerm_resource_group.rg_DesafioDevOps.name
   sku                 = "Standard"
+  admin_enabled       = true  # habilitando autenticação básica
 }
 
+resource "azurerm_role_assignment" "aks_acr_pull" {
+  principal_id              = azurerm_kubernetes_cluster.res-1.identity[0].principal_id
+  role_definition_name      = "AcrPull"
+  scope                     = azurerm_container_registry.acrdesafiodevops1.id
+}
+
+# Outputs para usar no pipeline
+output "container_registry_name" {
+  value       = azurerm_container_registry.acrdesafiodevops1.name
+  description = "Container Registry Name"
+}
+
+output "container_registry_login_server" {
+  value       = azurerm_container_registry.acrdesafiodevops1.login_server
+  description = "Container Registry Server to Login"
+}
+
+output "container_registry_admin_username" {
+  value       = azurerm_container_registry.acrdesafiodevops1.admin_username
+  description = "Username for basic authentication to the ACR"
+}
+
+output "container_registry_admin_password" {
+  value       = azurerm_container_registry.acrdesafiodevops1.admin_password
+  description = "Password for basic authentication to the Container Registry"
+  sensitive   = true
+}
