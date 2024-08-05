@@ -64,23 +64,28 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-dotnet
 
+    env:
+      ACR_LOGIN_SERVER: ${{ needs.terraform.outputs.container_registry_login_server }}
+      ACR_USERNAME: ${{ needs.terraform.outputs.container_registry_admin_username }}
+      ACR_PASSWORD: ${{ needs.terraform.outputs.container_registry_admin_password }}
+
     steps:
     - uses: actions/checkout@v4
 
     - name: Login to ACR
       uses: azure/docker-login@v1
       with:
-        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
+        login-server: ${{ env.ACR_LOGIN_SERVER }}
+        username: ${{ env.ACR_USERNAME }}
+        password: ${{ env.ACR_PASSWORD }}
 
     - name: Build the Docker image
       working-directory: ./dotnet-app
-      run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest .
+      run: docker build -t ${{ env.ACR_LOGIN_SERVER }}/dotnetapp:latest .
 
     - name: Save Docker image to a tar file
       working-directory: ./dotnet-app
-      run: docker save ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest -o dotnetapp.tar
+      run: docker save ${{ env.ACR_LOGIN_SERVER }}/dotnetapp:latest -o dotnetapp.tar
 
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v2
@@ -90,12 +95,14 @@ jobs:
 
     - name: Push Docker image to ACR
       working-directory: ./dotnet-app
-      run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest
+      run: docker push ${{ env.ACR_LOGIN_SERVER }}/dotnetapp:latest
 
-  # Deploy da aplicação no cluster AKS
   deploy-aks:
     runs-on: ubuntu-latest
     needs: build-docker-acr
+
+    env:
+      KUBE_CONFIG: ${{ needs.terraform.outputs.kube_config }}
 
     steps:
     - name: Checkout code
@@ -108,10 +115,8 @@ jobs:
 
     - name: Set up Kubernetes tools
       run: |
-        az aks get-credentials --resource-group rg_DesafioDevOps --name cluster_DesafioDevOps
-        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x ./kubectl
-        sudo mv ./kubectl /usr/local/bin/kubectl
+        echo ${{ env.KUBE_CONFIG }} | base64 --decode > ~/.kube/config
+        kubectl version --client
 
     - name: Deploy to AKS
       run: |
