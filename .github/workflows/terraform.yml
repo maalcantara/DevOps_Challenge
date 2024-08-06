@@ -80,6 +80,12 @@ jobs:
       working-directory: ./terraform
       run: terraform apply -auto-approve ./deploy_plan.tfplan
 
+    - name: Outputs json
+      working-directory: ./terraform
+      run: |
+        terraform output -json > ./outputs.json
+        cat outputs.json
+
     # Capturando os Outputs do Terraform e definindo variáveis de saída para a próxima pipeline
     - name: Set Output Variables
       id: reg_var
