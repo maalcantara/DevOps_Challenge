@@ -19,3 +19,9 @@ output "container_registry_admin_password" {
   description = "Password for basic authentication to the Container Registry"
   sensitive   = true
 }
+
+output "kube_config" {
+  value       =  azurerm_kubernetes_cluster.cluster_DesafioDevOps.kube_config_raw
+  description = "AKS configuration"
+  sensitive   = false
+}
