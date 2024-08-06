@@ -8,6 +8,10 @@ O objetivo deste desafio é provisionar uma infraestrutura usando Infra-as-Code 
 Aplicação das melhores práticas para provisionamento de recursos na nuvem.
 - Localização do AKS em `central-us` com VMs do tamanho `Standard_DS2_v2`
 
+**Service Principal (App Registration):** Serve para que o Terraform possa criar recursos no Azure através de uma autenticação pela Service Principal. `Microsoft Entra ID` → Add Application Registration.
+
+- Autorização para a Service Principal: Subscriptions🔑 → Access Control (IAM) → Add Role Assignment → Privileged administrator roles. Isso possibilita criar recursos no Azure através do Terraform → que posteriormente será utilizado para atribuir a autorização 'acr pull' do Container Registry.
+
 ## Estrutura do Projeto 🏗️
 
 ### Diretório `backend-terraform`
@@ -17,7 +21,9 @@ Contém a configuração para provisionar os recursos **fixos** necessários par
 Contém a configuração para provisionar o cluster AKS, a rede virtual e suas subnets. Este diretório utiliza o backend configurado para armazenar o estado (no arquivo .tfstate) do Terraform remotamente.
 
 **🔵 Atualização (01/08/24):** adição do resource `container_registry`, que cria um Azure Container Registry (ACR), utilizado para armazenar as imagens Docker geradas a partir do build da aplicação.
-- Além disso, foi configurado um `role_assignment` para garantir que o AKS tenha permissão para puxar imagens diretamente do ACR → facilitando o processo de deploy no cluster.
+- Além disso, foi configurado um `role_assignment` → 'acr pull' para garantir que o AKS tenha permissão para puxar imagens diretamente do ACR → facilitando o processo de deploy no cluster.
+
+- 05/08/2024 - Adição de variáveis de saída (outputs) que capturam as informações necessárias do ACR (nome, servidor de login, usuário e senha).
 
 ### Diretório `dotnet-app`
 Aplicativo web .NET básico de 'Hello World' que posteriormente será realizado o deploy desta aplicação no cluster AKS criado.
@@ -28,7 +34,7 @@ Contém os arquivos de configuração necessários para o deploy da aplicação 
 
 - `service.yml`: Define como a aplicação será exposta para o mundo exterior. Especifica o tipo de serviço (por exemplo, `LoadBalancer`), as portas a serem expostas e outras configurações necessárias para garantir que a aplicação seja acessível externamente.
 
-## Workflow de Pipeline CI/CD 📥
+## Workflows de Pipeline CI/CD 📥
 Este repositório possui duas pipelines yaml configuradas utilizando GitHub Actions para **automatizar** o processo de provisionamento, gerenciamento da infraestrutura, build da aplicação e criação de uma imagem docker a partir deste build.
 
 ### 🧱 'terraform.yml': 
@@ -38,6 +44,7 @@ A pipeline realiza as seguintes etapas:
 2. Inicializa o Terraform.
 3. Valida a configuração do Terraform.
 4. Gera e aplica o plano de execução do Terraform, criando todos os recursos detalhados no script.
+5. Definir e exportar outputs (variáveis de saída), permitindo que sejam utilizadas em outros jobs, como na pipeline de build da aplicação.
 
 ### 🛠️ 'dotnet-build.yml': 
 Com a adição do evento `workflow_run`, essa pipeline é executada após o êxito da 'terraform.yml', e realiza os seguintes passos:
@@ -50,7 +57,7 @@ Com a adição do evento `workflow_run`, essa pipeline é executada após o êxi
 5. Faz o upload do artefato de build.
 
 #### 2° Job: build-docker-acr
-6. Faz login no ACR.
+6. Faz login no ACR, utilizando os outputs do Terraform.
 7. Constrói a imagem Docker.
 8. Salva a imagem Docker em um arquivo tar.
 9. Realiza o upload do artefato da imagem Docker no actions.
