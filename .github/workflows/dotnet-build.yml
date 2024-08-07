@@ -64,10 +64,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-dotnet
 
-    env:
-      ACR_LOGIN_SERVER: ${{ needs.terraform.outputs.container_registry_login_server }}
-      ACR_USERNAME: ${{ needs.terraform.outputs.container_registry_admin_username }}
-      ACR_PASSWORD: ${{ needs.terraform.outputs.container_registry_admin_password }}
 
     steps:
     - uses: actions/checkout@v4
@@ -75,17 +71,17 @@ jobs:
     - name: Login to ACR
       uses: azure/docker-login@v1
       with:
-        login-server: ${{ env.ACR_LOGIN_SERVER }}
-        username: ${{ env.ACR_USERNAME }}
-        password: ${{ env.ACR_PASSWORD }}
+        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
 
     - name: Build the Docker image
       working-directory: ./dotnet-app
-      run: docker build -t ${{ env.ACR_LOGIN_SERVER }}/dotnetapp:latest .
+      run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest .
 
     - name: Save Docker image to a tar file
       working-directory: ./dotnet-app
-      run: docker save ${{ env.ACR_LOGIN_SERVER }}/dotnetapp:latest -o dotnetapp.tar
+      run: docker save ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest -o dotnetapp.tar
 
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v2
@@ -95,14 +91,11 @@ jobs:
 
     - name: Push Docker image to ACR
       working-directory: ./dotnet-app
-      run: docker push ${{ env.ACR_LOGIN_SERVER }}/dotnetapp:latest
+      run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest
 
   deploy-aks:
     runs-on: ubuntu-latest
     needs: build-docker-acr
-
-    env:
-      KUBE_CONFIG: ${{ needs.terraform.outputs.kube_config }}
 
     steps:
     - name: Checkout code
@@ -113,12 +106,19 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Set up Kubernetes tools
-      run: |
-        echo ${{ env.KUBE_CONFIG }} | base64 --decode > ~/.kube/config
-        kubectl version --client
+    - name: Set up K8s CLI
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    - name: Get AKS credentials
+      run: az aks get-credentials --resource-group rg_DesafioDevOps --name cluster_DesafioDevOps
+
+    # Garante que o namespace 'dev' exista para a aplicação dos manifests
+    - name: Create namespace
+      run: kubectl create namespace dev || true
 
     - name: Deploy to AKS
       run: |
-        kubectl apply -f k8s/deployment.yml
-        kubectl apply -f k8s/service.yml
+        kubectl apply -f k8s/deployment.yml --namespace dev
+        kubectl apply -f k8s/service.yml --namespace dev
