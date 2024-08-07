@@ -80,3 +80,7 @@ Com a adição do evento `workflow_run`, essa pipeline é executada após o êxi
 → Atualizar o path do acr em k8s/deployment.yml e o secret do actions. Tive que fazer isso porque adicionei o resource Container Registry (ACR) no main.tf do diretório principal.
 → Atualizar a role assignment do Terraform para Owner no resource group, garantindo que ele tenha as permissões necessárias para atribuir o papel AcrPull ao AKS, permitindo que o cluster acesse o Azure Container Registry (ACR) durante a execução do código.
 → Atualizar a role assignment do Terraform para 'Owner' no Azure Container Registry (ACR), garantindo que ele tenha as permissões necessárias para atribuir o papel AcrPull ao AKS. Isso permitirá que o cluster acesse o ACR durante a execução do código.
+
+**Reunião O2M DevOps 06/08:** colocar o recurso de ACR no resouce group fixo (backend-terraform) → depois de provisionar, adicionar as credenciais do acr nos secrets do github e passar essas credenciais para a pipeline.
+
+GitHub Templates: estudar!!
