@@ -121,11 +121,10 @@ jobs:
       - name: Create ACR Secret
         run: |
           kubectl create secret docker-registry acr-secret \
-            --docker-server=${{ secrets.ACR_LOGIN_SERVER }} \
-            --docker-username=${{ secrets.ACR_USERNAME }} \
-            --docker-password=${{ secrets.ACR_PASSWORD }} \
-            --docker-email=${{ secrets.ACR_EMAIL }} \
-            --namespace=dev
+              --namespace=dev \
+              --docker-server=${{ secrets.ACR_LOGIN_SERVER }} \
+              --docker-username=${{ secrets.ACR_USERNAME }} \
+              --docker-password=${{ secrets.ACR_PASSWORD }}
 
       - name: Deploy to AKS
         run: |
