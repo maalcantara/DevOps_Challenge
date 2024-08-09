@@ -15,10 +15,10 @@ spec:
     spec:
       containers:
       - name: dotnetapp
-        image: acrdesafiodevops.azurecr.io/dotnetapp:latest
-        imagePullPolicy: Always
+        image: acrdesafiodevops.azurecr.io/dotnetapp:v1
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
       imagePullSecrets:
-      # segredo k8s que armazena do acr para poder puxar imagens
       - name: acr-secret
+      # segredo k8s que armazena do acr para poder puxar imagens
