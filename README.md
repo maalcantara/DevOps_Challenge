@@ -15,7 +15,7 @@ Aplicação das melhores práticas para provisionamento de recursos na nuvem.
 ## Estrutura do Projeto 🏗️
 
 ### Diretório `backend-terraform`
-Contém a configuração para provisionar os recursos **fixos** necessários para armazenar o estado do Terraform. Isso inclui a criação de um resource group, uma storage account, um container de armazenamento no Azure, e o recurso ACR (Azure Container Registry), que posteriormente irá armazenar a imagem docker gerada a partir da execução da aplicação.
+Contém a configuração para provisionar os recursos **fixos** necessários para armazenar o estado do Terraform. Isso inclui a criação de um resource group, uma storage account, um container de armazenamento no Azure, e o recurso ACR (Azure Container Registry), que posteriormente irá armazenar a imagem docker gerada a partir do deploy da aplicação.
 
 ### Diretório `terraform` 🌱
 Contém a configuração para provisionar o cluster AKS, a rede virtual e suas subnets. Este diretório utiliza o backend configurado para armazenar o estado (no arquivo .tfstate) do Terraform remotamente.
