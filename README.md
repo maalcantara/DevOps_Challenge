@@ -34,6 +34,9 @@ Contém os arquivos de configuração necessários para o deploy da aplicação 
 
 - `service.yml`: Define como a aplicação será exposta para o mundo exterior. Especifica o tipo de serviço (por exemplo, `LoadBalancer`), as portas a serem expostas e outras configurações necessárias para garantir que a aplicação seja acessível externamente.
 
+### Dockerfile 🐋
+O arquivo `Dockerfile` configura a construção de uma imagem Docker para sua aplicação .NET. Ele usa o .NET SDK para compilar e publicar a aplicação e o .NET Runtime para executá-la. O processo inclui copiar os arquivos, restaurar dependências, compilar a aplicação e definir o ponto de entrada.
+
 ## Workflows de Pipeline CI/CD 📥
 Este repositório possui duas pipelines yaml configuradas utilizando GitHub Actions para **automatizar** o processo de provisionamento, gerenciamento da infraestrutura, build da aplicação e criação de uma imagem docker a partir deste build.
 
