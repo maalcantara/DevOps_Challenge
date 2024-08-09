@@ -17,118 +17,117 @@ jobs:
       DOTNET_VERSION: '8.0.x'
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    # Lint for C# -> dotnet format
-    - name: Install dotnet-format tool
-      working-directory: ./dotnet-app
-      run: dotnet tool install -g dotnet-format
+      # Lint for C# -> dotnet format
+      - name: Install dotnet-format tool
+        working-directory: ./dotnet-app
+        run: dotnet tool install -g dotnet-format
 
-    - name: Run dotnet format
-      working-directory: ./dotnet-app
-      run: dotnet format
+      - name: Run dotnet format
+        working-directory: ./dotnet-app
+        run: dotnet format
 
-    # SonarLint, SonarCloud Analysis
-    - name: Analyze with SonarCloud
-      uses: SonarSource/sonarcloud-github-action@v2.2.0
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=maalcantara_DevOps_Challenge
-          -Dsonar.organization=maalcantara
-          -X
-        projectBaseDir: .
+      # SonarLint, SonarCloud Analysis
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@v2.2.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=maalcantara_DevOps_Challenge
+            -Dsonar.organization=maalcantara
+            -X
+          projectBaseDir: .
 
-    - name: Build the project
-      working-directory: ./dotnet-app
-      run: dotnet build --configuration Release
+      - name: Build the project
+        working-directory: ./dotnet-app
+        run: dotnet build --configuration Release
 
-    - name: Publish the project
-      working-directory: ./dotnet-app
-      run: dotnet publish --configuration Release --output ./publish
+      - name: Publish the project
+        working-directory: ./dotnet-app
+        run: dotnet publish --configuration Release --output ./publish
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: dotnet-app
-        path: ./dotnet-app/publish
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnet-app
+          path: ./dotnet-app/publish
 
   build-docker-acr:
     runs-on: ubuntu-latest
     needs: build-dotnet
 
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Login to ACR
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
-    - name: Build the Docker image
-      working-directory: ./dotnet-app
-      run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest .
+      - name: Build the Docker image
+        working-directory: ./dotnet-app
+        run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest .
 
-    - name: Save Docker image to a tar file
-      working-directory: ./dotnet-app
-      run: docker save ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest -o dotnetapp.tar
+      - name: Save Docker image to a tar file
+        working-directory: ./dotnet-app
+        run: docker save ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest -o dotnetapp.tar
 
-    - name: Upload Docker image artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: dotnetapp-image
-        path: ./dotnet-app/dotnetapp.tar
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnetapp-image
+          path: ./dotnet-app/dotnetapp.tar
 
-    - name: Push Docker image to ACR
-      working-directory: ./dotnet-app
-      run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest
+      - name: Push Docker image to ACR
+        working-directory: ./dotnet-app
+        run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/dotnetapp:latest
 
   deploy-aks:
     runs-on: ubuntu-latest
     needs: build-docker-acr
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Set up K8s CLI
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+      - name: Set up K8s CLI
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
-    - name: Get AKS credentials
-      run: az aks get-credentials --resource-group rg_DesafioDevOps --name cluster_DesafioDevOps
+      - name: Get AKS credentials
+        run: az aks get-credentials --resource-group rg_DesafioDevOps --name cluster_DesafioDevOps
 
-    # Garante que o namespace 'dev' exista para a aplicação dos manifests
-    - name: Create namespace
-      run: kubectl create namespace dev || true
+      # Garante que o namespace 'dev' exista para a aplicação dos manifests
+      - name: Create namespace
+        run: kubectl create namespace dev || true
 
-    # autenicar o AKS com ACR sem Managed Identity (role-assignment de acr pull)
-    - name: Create ACR Secret
-      run: |
-        kubectl create secret docker-registry acr-secret \
-          --docker-server=${{ secrets.ACR_LOGIN_SERVER }} \
-          --docker-username=${{ secrets.ACR_USERNAME }} \
-          --docker-password=${{ secrets.ACR_PASSWORD }} \
-          --docker-email=${{ secrets.ACR_EMAIL }} \
-          --namespace=dev
+      # autenticar o AKS com ACR sem Managed Identity (role-assignment de acr pull)
+      - name: Create ACR Secret
+        run: |
+          kubectl create secret docker-registry acr-secret \
+            --docker-server=${{ secrets.ACR_LOGIN_SERVER }} \
+            --docker-username=${{ secrets.ACR_USERNAME }} \
+            --docker-password=${{ secrets.ACR_PASSWORD }} \
+            --docker-email=${{ secrets.ACR_EMAIL }} \
+            --namespace=dev
 
-    - name: Deploy to AKS
-      run: |
-        kubectl apply -f k8s/deployment.yml --namespace dev
-        kubectl apply -f k8s/service.yml --namespace dev
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f k8s/deployment.yml --namespace dev
+          kubectl apply -f k8s/service.yml --namespace dev
