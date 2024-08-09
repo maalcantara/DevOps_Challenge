@@ -118,6 +118,17 @@ jobs:
     - name: Create namespace
       run: kubectl create namespace dev || true
 
+    # autenicar o AKS com ACR sem Managed Identity (role-assignment de acr pull)
+    - name: Create ACR Secret
+      run: |
+        kubectl create secret docker-registry acr-secret \
+        --docker-server=${{ secrets.ACR_LOGIN_SERVER }} \
+        --docker-username=${{ secrets.ACR_USERNAME }} \
+        --docker-password=${{ secrets.ACR_PASSWORD }} \
+        --docker-email=${{ secrets.ACR_EMAIL }} \
+        --namespace=dev
+
+
     - name: Deploy to AKS
       run: |
         kubectl apply -f k8s/deployment.yml --namespace dev
