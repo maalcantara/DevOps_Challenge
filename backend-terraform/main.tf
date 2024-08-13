@@ -39,9 +39,3 @@ resource "azurerm_container_registry" "acrdesafiodevops" {
   sku                 = "Standard"
   admin_enabled       = true  # habilitando autenticação básica
 }
-
-resource "azurerm_role_assignment" "aks_acr_pull" {
-  principal_id              = azurerm_kubernetes_cluster.res-1.identity[0].principal_id
-  role_definition_name      = "AcrPull"
-  scope                     = azurerm_container_registry.acrdesafiodevops.id
-}
