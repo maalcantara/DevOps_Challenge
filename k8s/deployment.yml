@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: dotnetapp
-        image: acrdesafiodevops.azurecr.io/dotnetapp:v1
-        imagePullPolicy: IfNotPresent
+        image: acrdesafiodevops.azurecr.io/dotnetapp:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
       imagePullSecrets:
