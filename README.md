@@ -43,6 +43,8 @@ Este repositório possui duas pipelines yaml configuradas utilizando GitHub Acti
 ### 🧱 'terraform.yml': 
 A pipeline realiza as seguintes etapas: 
 
+`workflow_dispatch:` É um comando que permite o disparo manual da pipeline através de um botão "Run workflow" no GitHub Actions.
+
 1. Verifica a existência do resource group e, se existente, o destrói para evitar conflitos.
 2. Inicializa o Terraform.
 3. Valida a configuração do Terraform.
