@@ -10,20 +10,19 @@ permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
 jobs:
-  build-dotnet:
-    runs-on: ubuntu-latest
 
-    env:
-      DOTNET_VERSION: '8.0.x'
+  setup-dotnet:
+    uses: maalcantara/reusable_workflow/.github/workflows/setup-dotnet-sdk.yml@main
+    with:
+      dotnet_version: '8.0.x'
+    
+  build-dotnet:
+    needs: setup-dotnet
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       # Lint for C# -> dotnet format
       - name: Install dotnet-format tool
