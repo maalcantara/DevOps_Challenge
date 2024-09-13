@@ -83,5 +83,3 @@ Com a adição do evento `workflow_run`, essa pipeline é executada após o êxi
 **Parei aqui:** a pipeline de deploy funciona, ao verificar 'Workloads' do cluster AKS, o 'Ready' aparece 0/1 - descobrir por quê e como resolver.
 
 **Reunião O2M DevOps 06/08:** colocar o recurso de ACR no resouce group fixo (backend-terraform) → depois de provisionar, adicionar as credenciais do acr nos secrets do github e passar essas credenciais para a pipeline.
-
-GitHub Templates: estudar!!
