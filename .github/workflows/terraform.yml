@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch: #comando que permite a execução manual do pipeline
+  workflow_dispatch: # Comando que permite a execução manual do pipeline
 
 env:
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -16,61 +16,91 @@ env:
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
 jobs:
-  terraform:
+  setup:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.2.0
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.2.0
 
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Terraform Init
-      working-directory: ./terraform
-      run: terraform init
+  validate_and_check:
+    runs-on: ubuntu-latest
+    needs: setup
 
-    # verificar se o resource group já existe
-    - name: Check if Resource Group exists
-      id: rg_exists
-      continue-on-error: true
-      run: |
-        az group show --name rg_DesafioDevOps --output json > rg.json
-        if [ -s rg.json ]; then
-          echo "exists=true" >> $GITHUB_ENV
-        else 
-          echo "exists=false" >> $GITHUB_ENV
-        fi
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    # se o resource group existir, deletá-lo
-    - name: Destroy existing Resource Group if it exists
-      if: env.exists == 'true'
-      continue-on-error: true
-      working-directory: ./terraform
-      run: |
-        terraform destroy -target=azurerm_resource_group.rg_DesafioDevOps -auto-approve
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
 
-    - name: Terraform Validate
-      working-directory: ./terraform
-      run: terraform validate
+      # verificar se o resource group já existe
+      - name: Check if Resource Group exists
+        id: rg_exists
+        continue-on-error: true
+        run: |
+          az group show --name rg_DesafioDevOps --output json > rg.json
+          if [ -s rg.json ]; then
+            echo "exists=true" >> $GITHUB_ENV
+          else 
+            echo "exists=false" >> $GITHUB_ENV
+          fi
 
-    - name: Terraform Plan for Azure
-      working-directory: ./terraform
-      run: terraform plan -out=deploy_plan.tfplan
+      # se o resource group existir, deletá-lo
+      - name: Destroy existing Resource Group if it exists
+        if: env.exists == 'true'
+        continue-on-error: true
+        working-directory: ./terraform
+        run: |
+          terraform destroy -target=azurerm_resource_group.rg_DesafioDevOps -auto-approve
 
-    - name: Upload Terraform Plan
-      uses: actions/upload-artifact@v3 
-      with:
-        name: deploy_plan
-        path: ./terraform/deploy_plan.tfplan
+      - name: Terraform Validate
+        working-directory: ./terraform
+        run: terraform validate
 
-    - name: Terraform Apply for Azure
-      working-directory: ./terraform
-      run: terraform apply -auto-approve ./deploy_plan.tfplan
+  terraform_plan:
+    runs-on: ubuntu-latest
+    needs: validate_and_check
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Terraform Plan for Azure
+        working-directory: ./terraform
+        run: terraform plan -out=deploy_plan.tfplan
+
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v3
+        with:
+          name: deploy_plan
+          path: ./terraform/deploy_plan.tfplan
+
+  terraform_apply:
+    runs-on: ubuntu-latest
+    needs: terraform_plan
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v3
+        with:
+          name: deploy_plan
+          path: ./terraform
+
+      - name: Terraform Apply for Azure
+        working-directory: ./terraform
+        run: terraform apply -auto-approve ./deploy_plan.tfplan
