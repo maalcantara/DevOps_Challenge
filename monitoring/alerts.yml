@@ -1,0 +1,11 @@
+groups:
+  - name: node-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: sum(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) < 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alta utilização de CPU em {{ $labels.instance }}"
+          description: "A utilização de CPU está acima de 50% por mais de 5 minutos."
