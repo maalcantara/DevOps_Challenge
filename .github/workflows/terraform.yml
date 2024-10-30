@@ -1,12 +1,6 @@
 name: Terraform Plan and Apply for Azure
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch: #comando que permite a execução manual do pipeline
 
 env:
