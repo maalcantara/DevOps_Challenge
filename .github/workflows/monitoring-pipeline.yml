@@ -1,0 +1,17 @@
+name: Monitoring Deployment
+
+on:
+  push:
+    paths:
+      - 'k8s/prometheus-dashboard-config.yaml'
+
+jobs:
+  apply-monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Apply Prometheus Dashboard Config
+        run: |
+          kubectl apply -f k8s/prometheus-dashboard-config.yaml

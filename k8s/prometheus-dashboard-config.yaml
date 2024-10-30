@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  prometheus.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "hideControls": false,
+      ...
+    }
+kind: ConfigMap
+metadata:
+  name: prometheus-dashboard-config
+  namespace: monitoring
