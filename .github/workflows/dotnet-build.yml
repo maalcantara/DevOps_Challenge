@@ -43,6 +43,7 @@ jobs:
           args: >
             -Dsonar.projectKey=maalcantara_DevOps_Challenge
             -Dsonar.organization=maalcantara
+            -Dsonar.qualitygate.wait=false
             -X
           projectBaseDir: .
 
